@@ -12,34 +12,37 @@
 
 #define BLUR_SIZE 5
 
-//@@ INSERT CODE HERE
 #define TILE_WIDTH 16
-__global__ void blurKernel(float *out, float *in, int width, int height) {
-  int col = blockIdx.x * blockDim.x + threadIdx.x;
-  int row = blockIdx.y * blockDim.y + threadIdx.y;
 
-  if (col < width && row < height) {
-    int pixVal = 0;
-    int pixels = 0;
+//@@ INSERT CODE HERE
+__global__ void imageBlurKernel(float * inputImage, float * outputImage, 
+		int width, int height){
+	int Col = blockIdx.x * blockDim.x + threadIdx.x;
+	int Row = blockIdx.y * blockIdx.y + threadIdx.y;
 
-    // Get the average of the surrounding BLUR_SIZE x BLUR_SIZE box
-    for (int blurrow = -BLUR_SIZE; blurrow < BLUR_SIZE + 1; ++blurrow) {
-      for (int blurcol = -BLUR_SIZE; blurcol < BLUR_SIZE + 1; ++blurcol) {
+	if(Col < width && Row < height)
+	{
+	    float pixelVal = 0;
+	    int pixels = 0;
 
-        int currow = row + blurrow;
-        int curcol = col + blurcol;
-        // Verify we have a valid image pixel
-        if (currow > -1 && currow < height && curcol > -1 &&
-            curcol < width) {
-          pixVal += in[currow * width + curcol];
-          pixels++; // Keep track of number of pixels in the avg
-        }
-      }
-    }
+	    int curRow, curCol;
+	    //Get the average of the surrounding BLUR_SIZE x BLUR_SIZE box
+	    for(int blurRow = -BLUR_SIZE; blurRow <= BLUR_SIZE; blurRow++)
+	    {
+		for(int blurCol = -BLUR_SIZE; blurCol <= BLUR_SIZE; blurCol++)
+		{
+		    curRow = Row + blurRow;
+	    	    curCol = Col + blurCol;
+		    if(curRow>=0 && curRow<height && curCol>=0 && curCol<width)
+		    {
+		        pixelVal += inputImage[curRow*width + curCol];
+		        pixels++;	    
+		    }
+		}
+	    }
+		outputImage[Row*width + Col] =(float)(pixelVal/pixels);
+	}
 
-    // Write our new pixel value out
-    out[row * width + col] = (unsigned char)(pixVal / pixels);
-  }
 }
 
 int main(int argc, char *argv[]) {
@@ -88,13 +91,12 @@ int main(int argc, char *argv[]) {
 
   ///////////////////////////////////////////////////////
   wbTime_start(Compute, "Doing the computation on the GPU");
-  //@@ INSERT CODE HERE
-  dim3 dimGrid(ceil((float)imageWidth / TILE_WIDTH),
-               ceil((float)imageHeight / TILE_WIDTH));
   dim3 dimBlock(TILE_WIDTH, TILE_WIDTH, 1);
-  blurKernel<<<dimGrid, dimBlock>>>(deviceOutputImageData,
-                                    deviceInputImageData, imageWidth,
-                                    imageHeight);
+  dim3 dimGrid(ceil((float)imageWidth / TILE_WIDTH),
+	       ceil((float)imageHeight / TILE_WIDTH));
+
+  imageBlurKernel<<<dimGrid, dimBlock >>>(deviceOutputImageData,
+		  deviceOutputImageData,imageWidth, imageHeight);
   wbTime_stop(Compute, "Doing the computation on the GPU");
 
   ///////////////////////////////////////////////////////
