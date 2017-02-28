@@ -1,0 +1,1 @@
+/usr/bin/c++   -std=c++11     CMakeFiles/cpp11.dir/main.o CMakeFiles/cpp11.dir/./cpp11_generated_test.cu.o  -o cpp11 -rdynamic /usr/local/cuda-8.0/lib64/libcudart.so -lcuda -Wl,-rpath,/usr/local/cuda-8.0/lib64 
