@@ -1,5 +1,8 @@
 
 #include <wb.h>
+#include <iostream>
+
+using namespace std;
 
 #define wbCheck(stmt)                                                     \
   do {                                                                    \
@@ -90,6 +93,8 @@ int main(int argc, char **argv) {
   //@@ Initialize the grid and block dimensions here
   dim3 DimGrid(ceil(numCColumns/16.0), ceil(numCRows/16.0),1);
   dim3 DimBlock(16, 16, 1);  
+
+  cout << "DimGrid.x =  " << DimGrid.x << " DimGrid.y = " << DimGrid.y << endl;
 
   wbTime_start(Compute, "Performing CUDA computation");
   //@@ Launch the GPU Kernel here
